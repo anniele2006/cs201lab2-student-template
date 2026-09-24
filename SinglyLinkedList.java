@@ -99,143 +99,196 @@ public class SinglyLinkedList<E extends Comparable<E>> {
         return sb.toString();
     }
 
-    // write your codes here
-    public void swap(){
-        // nothing to swap if empty or size is 1
-        if (isEmpty() || size() == 1) {
+    // // write your codes here
+    // public void swap(){
+    //     // nothing to swap if empty or size is 1
+    //     if (isEmpty() || size() == 1) {
+    //         return;
+    //     }
+
+    //     // 5 3 2 4 1
+    //     // one pass: find max, min, swap positions
+    //     // second pass: find max (smaller than last max), and min (larger than last min) n swap positions
+    //     // size/2 passes
+    //     // 1 3 4 2 5
+
+    //     E lowerBound = null;
+    //     E upperBound = null;
+
+    //     for (int i = 0; i < size / 2; i++) {
+
+    //         Node<E> min = null;
+    //         Node<E> max = null;
+
+    //         Node<E> minPrev = null;
+    //         Node<E> maxPrev = null;
+
+    //         Node<E> prev = null;
+    //         Node<E> current = head;
+
+    //         // time to parse thru
+    //         while (current != null) {
+
+    //             E value = current.getElement();
+
+    //             // check to consider only values that haven't been swapped
+    //             boolean valid = (lowerBound == null || value.compareTo(lowerBound) > 0) && (upperBound == null || value.compareTo(upperBound) < 0);
+
+    //             if (valid) {
+
+    //                 if (min == null || value.compareTo(min.getElement()) < 0) {
+    //                     min = current;
+    //                     minPrev = prev;
+    //                 }
+
+    //                 if (max == null || value.compareTo(max.getElement()) > 0) {
+    //                     max = current;
+    //                     maxPrev = prev;
+    //                 }
+
+    //             }
+
+    //             prev = current;
+    //             current = current.getNext();
+    //         }
+
+    //         // save values before moving the nodes for the next parse
+    //         lowerBound = min.getElement();
+    //         upperBound = max.getElement();
+
+    //         swapNodes(min, minPrev, max, maxPrev);
+        
+    //     }
+
+    // }
+
+    public void swap() {
+        if (size <= 1) {
             return;
         }
 
-        // 5 3 2 4 1
-        // one pass: find max, min, swap positions
-        // second pass: find max (smaller than last max), and min (larger than last min) n swap positions
-        // size/2 passes
-        // 1 3 4 2 5
+        // keep nodes in original sequence
+        ArrayList<Node<E>> original = new ArrayList<>();
 
-        E lowerBound = null;
-        E upperBound = null;
+        Node<E> current = head;
 
-        for (int i = 0; i < size / 2; i++) {
-
-            Node<E> min = null;
-            Node<E> max = null;
-
-            Node<E> minPrev = null;
-            Node<E> maxPrev = null;
-
-            Node<E> prev = null;
-            Node<E> current = head;
-
-            // time to parse thru
-            while (current != null) {
-
-                E value = current.getElement();
-
-                // check to consider only values that haven't been swapped
-                boolean valid = (lowerBound == null || value.compareTo(lowerBound) > 0) && (upperBound == null || value.compareTo(upperBound) < 0);
-
-                if (valid) {
-
-                    if (min == null || value.compareTo(min.getElement()) < 0) {
-                        min = current;
-                        minPrev = prev;
-                    }
-
-                    if (max == null || value.compareTo(max.getElement()) > 0) {
-                        max = current;
-                        maxPrev = prev;
-                    }
-
-                }
-
-                prev = current;
-                current = current.getNext();
-            }
-
-            // save values before moving the nodes for the next parse
-            lowerBound = min.getElement();
-            upperBound = max.getElement();
-
-            swapNodes(min, minPrev, max, maxPrev);
-        
+        while (current != null) {
+            original.add(current);
+            current = current.getNext();
         }
 
+        // Make another list and sort the nodes by value by value
+        ArrayList<Node<E>> sorted = new ArrayList<>(original);
+        sorted.sort((a, b) -> a.getElement().compareTo(b.getElement()));
+
+        // map each node to the one it shall swap with\
+        // smallest -> largest, 2nd smallest -> 2nd largest...
+        Map<Node<E>, Node<E>> partner = new HashMap<>();
+
+        for (int i = 0; i < sorted.size(); i++) {
+            partner.put(
+                sorted.get(i),
+                sorted.get(sorted.size() - 1 - i)
+            );
+        }
+
+        /*
+        * Rebuild the linked-list sequence.
+        *
+        * At every original position, put that node's
+        * corresponding partner.
+        */
+
+        // rebuild link list at original position, put node's partner from map
+        head = partner.get(original.get(0));
+
+        Node<E> previous = head;
+
+        for (int i = 1; i < original.size(); i++) {
+            Node<E> nextNode = partner.get(original.get(i));
+
+            previous.setNext(nextNode);
+            previous = nextNode;
+        }
+
+        tail = previous;
+        tail.setNext(null);
     }
 
 
-    // swap e1 and e2 spots, e1b and e2b are the nodes b4 them
-    public void swapNodes(Node<E> e1, Node<E> e1b, Node<E> e2, Node<E> e2b) {
-        
-        if (e1 == e2) {
-            return;
-        }
-        // e1 immediately before e2
-        if (e1.getNext() == e2) {
+    // // swap e1 and e2 spots, e1b and e2b are the nodes b4 them
+    // public void swapNodes(Node<E> e1, Node<E> e1b, Node<E> e2, Node<E> e2b) {
 
-            // connect node before e1 to e2
-            if (e1b == null) {
-                head = e2;           // e1 was head
-            } else {
-                e1b.setNext(e2);
-            }
+    //     if (e1 == e2) {
+    //         return;
+    //     }
+    //     // e1 immediately before e2
+    //     if (e1.getNext() == e2) {
 
-            e1.setNext(e2.getNext());
-            e2.setNext(e1);
+    //         // connect node before e1 to e2
+    //         if (e1b == null) {
+    //             head = e2;           // e1 was head
+    //         } else {
+    //             e1b.setNext(e2);
+    //         }
 
-            // if e2 used to be tail, e1 is now tail
-            if (tail == e2) {
-                tail = e1;
-            }
-        }
+    //         e1.setNext(e2.getNext());
+    //         e2.setNext(e1);
 
-        // e2 immediately before e1
-        else if (e2.getNext() == e1) {
+    //         // if e2 used to be tail, e1 is now tail
+    //         if (tail == e2) {
+    //             tail = e1;
+    //         }
+    //     }
 
-            if (e2b == null) {
-                head = e1;           // e2 was head
-            } else {
-                e2b.setNext(e1);
-            }
+    //     // e2 immediately before e1
+    //     else if (e2.getNext() == e1) {
 
-            e2.setNext(e1.getNext());
-            e1.setNext(e2);
+    //         if (e2b == null) {
+    //             head = e1;           // e2 was head
+    //         } else {
+    //             e2b.setNext(e1);
+    //         }
 
-            if (tail == e1) {
-                tail = e2;
-            }
-        }
+    //         e2.setNext(e1.getNext());
+    //         e1.setNext(e2);
 
-        // non-adjacent
-        else {
-            Node<E> e1a = e1.getNext();
-            Node<E> e2a = e2.getNext();
+    //         if (tail == e1) {
+    //             tail = e2;
+    //         }
+    //     }
 
-            // point e1's previous node to e2
-            if (e1b == null) { //e1 is head
-                head = e2;
-            } else {
-                e1b.setNext(e2);
-            }
+    //     // non-adjacent
+    //     else {
+    //         Node<E> e1a = e1.getNext();
+    //         Node<E> e2a = e2.getNext();
 
-            // point e2's previous node to e1
-            if (e2b == null) {      // e2 is head
-                head = e1;
-            } else {
-                e2b.setNext(e1);
-            }
+    //         // point e1's previous node to e2
+    //         if (e1b == null) { //e1 is head
+    //             head = e2;
+    //         } else {
+    //             e1b.setNext(e2);
+    //         }
 
-            e2.setNext(e1a);
-            e1.setNext(e2a);
+    //         // point e2's previous node to e1
+    //         if (e2b == null) {      // e2 is head
+    //             head = e1;
+    //         } else {
+    //             e2b.setNext(e1);
+    //         }
 
-            // update tail if necessary
-            if (tail == e1) {
-                tail = e2;
-            } else if (tail == e2) {
-                tail = e1;
-            }
-        }
+    //         e2.setNext(e1a);
+    //         e1.setNext(e2a);
 
-    }
+    //         // update tail if necessary
+    //         if (tail == e1) {
+    //             tail = e2;
+    //         } else if (tail == e2) {
+    //             tail = e1;
+    //         }
+    //     }
+
+    // }
 
 
 
